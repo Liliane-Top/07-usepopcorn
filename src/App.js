@@ -7,11 +7,8 @@ import { Box } from "./components/Box";
 import { MovieList } from "./components/MovieList";
 import { WatchedSummary } from "./components/WatchedSummary";
 import { WatchedMovieList } from "./components/WatchedMovieList";
-import { tempMovieData } from "./data/tempMovieData";
-import { tempWatchedData } from "./data/tempWatchedData";
-
-export const average = (arr) =>
-  arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
+import { Loader } from "./components/Loader";
+import { ErrorMessage } from "./components/ErrorMessage";
 
 const apikey = "43bf8725";
 
@@ -21,20 +18,14 @@ export default function App() {
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
 
-  // useEffect(() => {
-  //   console.log("After initial render");
-  // }, []);
+  const handleSelectedMovie = (id) => {
+    // id === selectedId ? handleClose() : setSelectedId(id);
+    setSelectedId(() => (id === selectedId ? null : id));
+  };
 
-  // useEffect(() => {
-  //   console.log("After each render");
-  // });
-
-  // useEffect(() => {
-  //   console.log("After state change of query");
-  // }, [query]);
-
-  // console.log("During render");
+  const handleClose = () => setSelectedId(null);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -75,22 +66,71 @@ export default function App() {
       <Main>
         <Box>
           {isLoading && <Loader />}
-          {!isLoading && !error && <MovieList movies={movies} />}
+          {!isLoading && !error && (
+            <MovieList
+              movies={movies}
+              onHandleSelectedMovie={handleSelectedMovie}
+            />
+          )}
           {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
+          {selectedId ? (
+            <MovieDetails selectedId={selectedId} onHandleClose={handleClose} />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMovieList watched={watched} />
+            </>
+          )}
         </Box>
       </Main>
     </>
   );
 }
 
-const Loader = () => {
-  return <p className="loader">Loading...</p>;
-};
+const MovieDetails = ({ selectedId, onHandleClose }) => {
+  const [movie, setMovie] = useState({});
+  //destructure details out of the movie object
+  const {
+    Title: title,
+    Year: year,
+    Poster: poster,
+    Runtime: runtime,
+    imdbRating,
+    Plot: plot,
+    Released: released,
+    Actors: actors,
+    Director: director,
+    Genre: genre,
+  } = movie;
 
-const ErrorMessage = (message) => {
-  return <p className="error">{message.message}</p>;
+  useEffect(() => {
+    const fetchMovieDetails = async () => {
+      try {
+        const response = await fetch(
+          `http://www.omdbapi.com/?apiKey=${apikey}&i=${selectedId}`
+        );
+        const data = await response.json();
+        setMovie(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchMovieDetails();
+  }, [selectedId]);
+
+  return (
+    <div className="details">
+      <header>
+        <button className="btn-back" onClick={onHandleClose}>
+          &larr;
+        </button>
+        <img src={poster} alt={`Poster of the ${movie} movie`} />
+        <div className="details-overview">
+          <h2>{title}</h2>
+        </div>
+      </header>
+    </div>
+  );
 };

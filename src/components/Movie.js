@@ -1,6 +1,6 @@
-export function Movie({ movie }) {
+export function Movie({ movie, onHandleSelectedMovie }) {
   return (
-    <li>
+    <li onClick={() => onHandleSelectedMovie(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
