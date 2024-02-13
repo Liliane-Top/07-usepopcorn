@@ -18,19 +18,21 @@ const apikey = "43bf8725";
 export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const query = "interstellar";
 
   useEffect(() => {
     const fetchMovies = async () => {
+      setIsLoading(true);
       const response = await fetch(
         `http://www.omdbapi.com/?apiKey=${apikey}&s=${query}`
       );
       const data = await response.json();
       setMovies(data.Search);
-      console.log(data.Search);
+      setIsLoading(false);
     };
-    fetchMovies();
-  }, []);
+    fetchMovies(); //it is required to call the inner function
+  }, []); //use effect 1st parameter is a function and second is in this case empty array
 
   return (
     <>
@@ -40,9 +42,7 @@ export default function App() {
       </NavBar>
 
       <Main>
-        <Box>
-          <MovieList movies={movies} />
-        </Box>
+        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMovieList watched={watched} />
@@ -51,3 +51,7 @@ export default function App() {
     </>
   );
 }
+
+const Loader = () => {
+  return <p className="loader">Loading...</p>;
+};
