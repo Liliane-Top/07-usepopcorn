@@ -16,16 +16,31 @@ export const average = (arr) =>
 const apikey = "43bf8725";
 
 export default function App() {
+  const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const query = "hjlalibhda";
+
+  // useEffect(() => {
+  //   console.log("After initial render");
+  // }, []);
+
+  // useEffect(() => {
+  //   console.log("After each render");
+  // });
+
+  // useEffect(() => {
+  //   console.log("After state change of query");
+  // }, [query]);
+
+  // console.log("During render");
 
   useEffect(() => {
     const fetchMovies = async () => {
       try {
         setIsLoading(true);
+        setError(""); //we need to reset the error to empty
         const response = await fetch(
           `http://www.omdbapi.com/?apiKey=${apikey}&s=${query}`
         );
@@ -42,13 +57,18 @@ export default function App() {
         setIsLoading(false);
       }
     };
+    if (query.length < 3) {
+      setMovies([]);
+      setError("");
+      return;
+    }
     fetchMovies(); //it is required to call the inner function
-  }, []); //use effect 1st parameter is a function and second is in this case empty array
+  }, [query]); //use effect 1st parameter is a function and second is in this case query so it will rerender after update state query
 
   return (
     <>
       <NavBar>
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <NumResults movies={movies} />
       </NavBar>
 
