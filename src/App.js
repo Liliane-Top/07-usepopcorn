@@ -19,17 +19,25 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const query = "interstellar";
 
   useEffect(() => {
     const fetchMovies = async () => {
-      setIsLoading(true);
-      const response = await fetch(
-        `http://www.omdbapi.com/?apiKey=${apikey}&s=${query}`
-      );
-      const data = await response.json();
-      setMovies(data.Search);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `http://www.omdbapi.com/?apiKey=${apikey}&s=${query}`
+        );
+        if (!response.ok)
+          throw new Error("something went wrong while fetching");
+        const data = await response.json();
+        setMovies(data.Search);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchMovies(); //it is required to call the inner function
   }, []); //use effect 1st parameter is a function and second is in this case empty array
@@ -42,7 +50,11 @@ export default function App() {
       </NavBar>
 
       <Main>
-        <Box>{isLoading ? <Loader /> : <MovieList movies={movies} />}</Box>
+        <Box>
+          {isLoading && <Loader />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {error && <ErrorMessage message={error} />}
+        </Box>
         <Box>
           <WatchedSummary watched={watched} />
           <WatchedMovieList watched={watched} />
@@ -54,4 +66,8 @@ export default function App() {
 
 const Loader = () => {
   return <p className="loader">Loading...</p>;
+};
+
+const ErrorMessage = (message) => {
+  return <p className="error">{message.message}</p>;
 };
