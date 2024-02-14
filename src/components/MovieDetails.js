@@ -3,9 +3,11 @@ import { Loader } from "./Loader";
 import StarRating from "./StarRating";
 import { apikey } from "../App";
 
-export function MovieDetails({ selectedId, onHandleClose }) {
+export function MovieDetails({ selectedId, onHandleClose, onHandleWatched }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [userRating, setUserRating] = useState("");
+
   //destructure details out of the movie object
   const {
     Title: title,
@@ -19,6 +21,21 @@ export function MovieDetails({ selectedId, onHandleClose }) {
     Director: director,
     Genre: genre,
   } = movie;
+
+  const handleWatched = () => {
+    const newWatchedMovie = {
+      imdbID: selectedId,
+      title,
+      year,
+      poster,
+      imdbRating: Number(imdbRating),
+      runtime: Number(runtime.split(" ").at(0)),
+      userRating,
+    };
+
+    onHandleWatched(newWatchedMovie);
+    onHandleClose(true);
+  };
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -63,7 +80,16 @@ export function MovieDetails({ selectedId, onHandleClose }) {
           </header>
           <section>
             <div className="rating">
-              <StarRating maxRating={10} size={24} />
+              <StarRating
+                maxRating={10}
+                size={24}
+                onSetRating={setUserRating}
+              />
+              {userRating > 0 && (
+                <button className="btn-add" onClick={handleWatched}>
+                  + Add to List
+                </button>
+              )}
             </div>
             <p>
               <em>{plot}</em>

@@ -28,6 +28,13 @@ export default function App() {
 
   const handleClose = () => setSelectedId(null);
 
+  const handleAddWatched = (movie) => {
+    const duplicate = watched.find(
+      (watchedMovie) => watchedMovie.imdbID === movie.imdbID
+    );
+    if (duplicate === undefined) setWatched((watched) => [...watched, movie]);
+  };
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -77,7 +84,11 @@ export default function App() {
         </Box>
         <Box>
           {selectedId ? (
-            <MovieDetails selectedId={selectedId} onHandleClose={handleClose} />
+            <MovieDetails
+              selectedId={selectedId}
+              onHandleClose={handleClose}
+              onHandleWatched={handleAddWatched}
+            />
           ) : (
             <>
               <WatchedSummary watched={watched} />
