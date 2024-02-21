@@ -29,10 +29,16 @@ export default function App() {
   const handleClose = () => setSelectedId(null);
 
   const handleAddWatched = (movie) => {
-    const duplicate = watched.find(
-      (watchedMovie) => watchedMovie.imdbID === movie.imdbID
-    );
-    if (duplicate === undefined) setWatched((watched) => [...watched, movie]);
+    setWatched((prevWatched) => {
+      const duplicate = prevWatched.find(
+        (watchedMovie) => watchedMovie.imdbID === movie.imdbID
+      );
+      if (!duplicate) {
+        return [...prevWatched, movie];
+      } else {
+        return prevWatched;
+      }
+    });
   };
 
   useEffect(() => {
